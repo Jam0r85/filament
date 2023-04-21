@@ -11,11 +11,20 @@ use Illuminate\Support\Str;
 trait CanUpdateState
 {
     protected ?Closure $updateStateUsing = null;
+    
+    protected bool $saveQuietly = false;
 
     public function updateStateUsing(?Closure $callback): static
     {
         $this->updateStateUsing = $callback;
 
+        return $this;
+    }
+    
+    public function saveQuietly(): static
+    {
+        $this->saveQuietly = true;
+        
         return $this;
     }
 
@@ -50,7 +59,12 @@ trait CanUpdateState
         }
 
         $record->setAttribute($columnName, $state);
-        $record->save();
+        
+        if ($this->saveQuietly) {
+            $record->saveQuietly();
+        } else {
+            $record->save();
+        }
 
         return $state;
     }
